@@ -1,0 +1,2242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FaultTrack Pro | Computer Lab Fault Tracking & Repair Scheduling</title>
+  <meta name="description" content="2nd Year DSA Project: Computer Laboratory Fault Tracking and Priority Repair Scheduling System with C++ Backend and Singly Linked List Queue.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    /* ==========================================================================
+       1. CSS CUSTOM PROPERTIES & THEME TOKENS
+       ========================================================================== */
+    :root {
+      /* Brand Palette */
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --primary-light: rgba(99, 102, 241, 0.15);
+      --primary-glow: rgba(99, 102, 241, 0.35);
+
+      /* Severity Colors (Curated HSL) */
+      --sev-1: #f43f5e; /* Critical - Rose */
+      --sev-1-bg: rgba(244, 63, 94, 0.12);
+      --sev-1-border: rgba(244, 63, 94, 0.3);
+      --sev-1-glow: rgba(244, 63, 94, 0.35);
+
+      --sev-2: #f59e0b; /* High - Amber */
+      --sev-2-bg: rgba(245, 158, 11, 0.12);
+      --sev-2-border: rgba(245, 158, 11, 0.3);
+
+      --sev-3: #0ea5e9; /* Medium - Sky */
+      --sev-3-bg: rgba(14, 165, 233, 0.12);
+      --sev-3-border: rgba(14, 165, 233, 0.3);
+
+      --sev-4: #10b981; /* Low - Emerald */
+      --sev-4-bg: rgba(16, 185, 129, 0.12);
+      --sev-4-border: rgba(16, 185, 129, 0.3);
+
+      /* Neutral Dark Mode (Default) */
+      --bg-base: #090d16;
+      --bg-surface: #111827;
+      --bg-card: rgba(17, 24, 39, 0.75);
+      --bg-card-hover: rgba(31, 41, 55, 0.85);
+      --bg-glass: rgba(17, 24, 39, 0.6);
+      --bg-input: #1f2937;
+
+      --text-main: #f9fafb;
+      --text-muted: #9ca3af;
+      --text-dim: #6b7280;
+
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-strong: rgba(255, 255, 255, 0.16);
+
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.5);
+      --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.25);
+
+      --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-heading: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --radius-full: 9999px;
+      --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Light Theme Override */
+    [data-theme="light"] {
+      --bg-base: #f8fafc;
+      --bg-surface: #ffffff;
+      --bg-card: rgba(255, 255, 255, 0.9);
+      --bg-card-hover: #ffffff;
+      --bg-glass: rgba(255, 255, 255, 0.8);
+      --bg-input: #f1f5f9;
+
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --text-dim: #94a3b8;
+
+      --border-subtle: rgba(0, 0, 0, 0.08);
+      --border-strong: rgba(0, 0, 0, 0.14);
+
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.08);
+      --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.15);
+    }
+
+    /* ==========================================================================
+       2. GLOBAL RESET & BASE STYLES
+       ========================================================================== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(at 10% 10%, rgba(99, 102, 241, 0.08) 0px, transparent 50%),
+        radial-gradient(at 90% 90%, rgba(14, 165, 233, 0.06) 0px, transparent 50%);
+      background-attachment: fixed;
+    }
+
+    a { color: var(--primary); text-decoration: none; }
+    button, input, select, textarea { font-family: inherit; font-size: inherit; }
+
+    /* ==========================================================================
+       3. TOP NAVIGATION & HEADER
+       ========================================================================== */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      background: var(--bg-glass);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 0.85rem 1.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, #6366f1, #3b82f6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 800;
+      font-size: 1.25rem;
+      box-shadow: var(--shadow-glow);
+    }
+
+    .brand-title {
+      font-family: var(--font-heading);
+      font-size: 1.2rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text-main);
+    }
+
+    .brand-subtitle {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .badge-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.3rem 0.65rem;
+      border-radius: var(--radius-full);
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: rgba(16, 185, 129, 0.12);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: currentColor;
+      box-shadow: 0 0 8px currentColor;
+      animation: pulseAnim 2s infinite;
+    }
+
+    @keyframes pulseAnim {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      padding: 0.55rem 1rem;
+      border-radius: var(--radius-md);
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: var(--transition);
+      user-select: none;
+    }
+
+    .btn:active { transform: scale(0.98); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), #4f46e5);
+      color: #ffffff;
+      box-shadow: var(--shadow-glow);
+    }
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #4f46e5, #4338ca);
+      box-shadow: 0 0 25px rgba(99, 102, 241, 0.45);
+    }
+
+    .btn-schedule {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #ffffff;
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+    }
+    .btn-schedule:hover {
+      background: linear-gradient(135deg, #059669, #047857);
+      box-shadow: 0 0 22px rgba(16, 185, 129, 0.45);
+    }
+
+    .btn-secondary {
+      background: var(--bg-surface);
+      color: var(--text-main);
+      border-color: var(--border-strong);
+    }
+    .btn-secondary:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--primary);
+    }
+
+    .btn-icon {
+      width: 38px;
+      height: 38px;
+      padding: 0;
+      border-radius: var(--radius-md);
+      background: var(--bg-surface);
+      color: var(--text-main);
+      border: 1px solid var(--border-subtle);
+    }
+    .btn-icon:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-strong);
+    }
+
+    /* ==========================================================================
+       4. MAIN CONTAINER & DASHBOARD TABS
+       ========================================================================== */
+    .container {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 1.75rem 1.5rem;
+      width: 100%;
+      flex: 1;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--border-subtle);
+      margin-bottom: 1.75rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .nav-tabs::-webkit-scrollbar { display: none; }
+
+    .tab-btn {
+      padding: 0.65rem 1.25rem;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      position: relative;
+      white-space: nowrap;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .tab-btn:hover { color: var(--text-main); }
+    .tab-btn.active {
+      color: var(--primary);
+    }
+    .tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--primary);
+      box-shadow: 0 0 10px var(--primary);
+    }
+
+    /* ==========================================================================
+       5. SUMMARY METRIC CARDS
+       ========================================================================== */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 1.15rem;
+      margin-bottom: 2rem;
+    }
+
+    .metric-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+      position: relative;
+      overflow: hidden;
+      transition: var(--transition);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .metric-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--border-strong);
+      box-shadow: var(--shadow-md);
+    }
+
+    .metric-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.65rem;
+    }
+
+    .metric-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+
+    .metric-icon-box {
+      width: 34px;
+      height: 34px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+    }
+
+    .metric-value {
+      font-family: var(--font-heading);
+      font-size: 2rem;
+      font-weight: 800;
+      line-height: 1.1;
+      color: var(--text-main);
+    }
+
+    .metric-footer {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      margin-top: 0.45rem;
+    }
+
+    /* Metric card accent color schemes */
+    .card-total .metric-icon-box { background: rgba(99, 102, 241, 0.15); color: #818cf8; }
+    .card-critical .metric-icon-box { background: var(--sev-1-bg); color: var(--sev-1); }
+    .card-pending .metric-icon-box { background: var(--sev-2-bg); color: var(--sev-2); }
+    .card-inprogress .metric-icon-box { background: rgba(14, 165, 233, 0.15); color: #38bdf8; }
+    .card-repaired .metric-icon-box { background: var(--sev-4-bg); color: var(--sev-4); }
+
+    /* ==========================================================================
+       6. PRIORITY QUEUE / SINGLY LINKED LIST VISUALIZER
+       ========================================================================== */
+    .section-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .section-title-wrap h2 {
+      font-family: var(--font-heading);
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .section-subtitle {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 0.15rem;
+    }
+
+    .linked-list-scroll {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      overflow-x: auto;
+      padding: 1.25rem 0.5rem;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border-strong) transparent;
+    }
+
+    .linked-list-scroll::-webkit-scrollbar {
+      height: 8px;
+    }
+    .linked-list-scroll::-webkit-scrollbar-thumb {
+      background: var(--border-strong);
+      border-radius: 4px;
+    }
+
+    /* Node representation */
+    .queue-node {
+      flex: 0 0 250px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      position: relative;
+      transition: var(--transition);
+      cursor: pointer;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .queue-node:hover {
+      transform: translateY(-4px);
+      border-color: var(--primary);
+      box-shadow: var(--shadow-glow);
+    }
+
+    .queue-node.head-node {
+      border: 2px solid #10b981;
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.3);
+    }
+
+    .head-badge {
+      position: absolute;
+      top: -10px;
+      left: 12px;
+      background: #10b981;
+      color: #ffffff;
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      padding: 0.15rem 0.5rem;
+      border-radius: var(--radius-full);
+      box-shadow: 0 2px 6px rgba(16, 185, 129, 0.4);
+    }
+
+    .node-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .node-id {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .node-computer {
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .node-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin: 0.45rem 0;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      line-height: 1.35;
+      min-height: 2.2rem;
+    }
+
+    .node-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 0.65rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .node-meta {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+    }
+
+    /* Singly Linked List Pointer Arrow */
+    .node-pointer {
+      flex: 0 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      gap: 0.2rem;
+    }
+
+    .arrow-line {
+      display: flex;
+      align-items: center;
+    }
+
+    .arrow-line svg {
+      width: 32px;
+      height: 18px;
+      stroke: var(--primary);
+    }
+
+    .null-node {
+      flex: 0 0 auto;
+      padding: 0.75rem 1.25rem;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px dashed var(--border-strong);
+      border-radius: var(--radius-md);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-dim);
+      text-align: center;
+    }
+
+    /* Severity badges */
+    .badge-sev {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.2rem 0.5rem;
+      border-radius: var(--radius-full);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .sev-1 { background: var(--sev-1-bg); color: var(--sev-1); border: 1px solid var(--sev-1-border); }
+    .sev-2 { background: var(--sev-2-bg); color: var(--sev-2); border: 1px solid var(--sev-2-border); }
+    .sev-3 { background: var(--sev-3-bg); color: var(--sev-3); border: 1px solid var(--sev-3-border); }
+    .sev-4 { background: var(--sev-4-bg); color: var(--sev-4); border: 1px solid var(--sev-4-border); }
+
+    .badge-stat {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.18rem 0.5rem;
+      border-radius: var(--radius-full);
+    }
+
+    .stat-pending { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+    .stat-inprogress { background: rgba(99, 102, 241, 0.15); color: #818cf8; }
+    .stat-repaired { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+
+    /* ==========================================================================
+       7. SPLIT LAYOUT: REGISTRATION FORM & FAULT TABLE
+       ========================================================================== */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    @media (max-width: 1024px) {
+      .dashboard-grid { grid-template-columns: 1fr; }
+    }
+
+    /* Form Styles */
+    .form-group {
+      margin-bottom: 1.1rem;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 0.65rem 0.85rem;
+      border-radius: var(--radius-md);
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      outline: none;
+      transition: var(--transition);
+    }
+
+    .form-control:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-light);
+    }
+
+    textarea.form-control {
+      resize: vertical;
+      min-height: 85px;
+    }
+
+    .severity-picker {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.4rem;
+    }
+
+    .sev-radio-btn {
+      position: relative;
+    }
+
+    .sev-radio-btn input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .sev-radio-label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0.5rem 0.2rem;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-input);
+      cursor: pointer;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-align: center;
+      transition: var(--transition);
+    }
+
+    .sev-radio-btn input:checked + .sev-radio-label {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      color: var(--text-main);
+      box-shadow: 0 0 10px var(--primary-light);
+    }
+
+    .sev-radio-btn:nth-child(1) input:checked + .sev-radio-label { border-color: var(--sev-1); background: var(--sev-1-bg); color: var(--sev-1); }
+    .sev-radio-btn:nth-child(2) input:checked + .sev-radio-label { border-color: var(--sev-2); background: var(--sev-2-bg); color: var(--sev-2); }
+    .sev-radio-btn:nth-child(3) input:checked + .sev-radio-label { border-color: var(--sev-3); background: var(--sev-3-bg); color: var(--sev-3); }
+    .sev-radio-btn:nth-child(4) input:checked + .sev-radio-label { border-color: var(--sev-4); background: var(--sev-4-bg); color: var(--sev-4); }
+
+    /* ==========================================================================
+       8. FAULT TABLE & FILTER CONTROLS
+       ========================================================================== */
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .filter-inputs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+      flex: 1;
+    }
+
+    .search-input-wrap {
+      position: relative;
+      min-width: 220px;
+      flex: 1;
+    }
+
+    .search-input-wrap svg {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      color: var(--text-dim);
+    }
+
+    .search-input-wrap input {
+      padding-left: 2.2rem;
+    }
+
+    .table-responsive {
+      overflow-x: auto;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.85rem;
+    }
+
+    .data-table th {
+      background: var(--bg-surface);
+      color: var(--text-muted);
+      font-weight: 600;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border-subtle);
+      white-space: nowrap;
+    }
+
+    .data-table td {
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      vertical-align: middle;
+    }
+
+    .data-table tr:hover td {
+      background: var(--bg-card-hover);
+    }
+
+    .data-table tr.highlighted-row td {
+      background: rgba(16, 185, 129, 0.15) !important;
+      border-color: rgba(16, 185, 129, 0.3);
+    }
+
+    .action-btn-group {
+      display: inline-flex;
+      gap: 0.35rem;
+    }
+
+    .btn-table-action {
+      padding: 0.25rem 0.55rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.72rem;
+      font-weight: 600;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-surface);
+      color: var(--text-main);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .btn-table-action:hover {
+      background: var(--primary-light);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    /* ==========================================================================
+       9. VISUAL CHARTS (SVG & CANVAS)
+       ========================================================================== */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .chart-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+    }
+
+    .chart-title {
+      font-family: var(--font-heading);
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+
+    .chart-canvas-wrap {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      min-height: 240px;
+    }
+
+    /* ==========================================================================
+       10. REPORTS SECTION
+       ========================================================================== */
+    .report-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 1.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .report-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.25rem;
+      margin-top: 1rem;
+    }
+
+    .lab-report-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1.2rem;
+    }
+
+    .lab-report-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .lab-name-tag {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    /* ==========================================================================
+       11. MODAL DIALOG
+       ========================================================================== */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    .modal-backdrop.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-dialog {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-lg);
+      width: 90%;
+      max-width: 480px;
+      padding: 1.75rem;
+      box-shadow: var(--shadow-lg);
+      transform: scale(0.95);
+      transition: transform 0.25s ease;
+    }
+
+    .modal-backdrop.active .modal-dialog {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+    }
+
+    .modal-title {
+      font-family: var(--font-heading);
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 1.25rem;
+    }
+
+    .dsa-explainer {
+      background: var(--primary-light);
+      border-left: 3px solid var(--primary);
+      padding: 0.65rem 0.85rem;
+      font-size: 0.75rem;
+      color: var(--text-main);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      margin-bottom: 1.25rem;
+      line-height: 1.4;
+    }
+
+    /* ==========================================================================
+       12. TOAST NOTIFICATIONS
+       ========================================================================== */
+    #toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .toast {
+      min-width: 280px;
+      max-width: 420px;
+      padding: 0.85rem 1.15rem;
+      border-radius: var(--radius-md);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-strong);
+      box-shadow: var(--shadow-lg);
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      transform: translateY(20px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast-success { border-left: 4px solid #10b981; }
+    .toast-error { border-left: 4px solid #f43f5e; }
+    .toast-info { border-left: 4px solid #6366f1; }
+    .toast-warning { border-left: 4px solid #f59e0b; }
+
+    /* ==========================================================================
+       13. PRINT STYLESHEET FOR OFFICIAL REPORTS
+       ========================================================================== */
+    @media print {
+      body { background: #ffffff !important; color: #000000 !important; }
+      .navbar, .nav-tabs, .btn, #registration-card, .filter-bar, .action-btn-group, #toast-container, .modal-backdrop { display: none !important; }
+      .container { max-width: 100% !important; padding: 0 !important; }
+      .section-card, .report-card { border: 1px solid #ccc !important; box-shadow: none !important; break-inside: avoid; }
+      .tab-content { display: block !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header class="navbar" role="banner">
+    <div class="brand-group">
+      <div class="brand-icon" aria-hidden="true">⚙</div>
+      <div>
+        <h1 class="brand-title">FaultTrack Pro</h1>
+        <p class="brand-subtitle">Computer Laboratory Fault Tracking &amp; Repair Scheduling System</p>
+      </div>
+    </div>
+
+    <div class="nav-actions">
+      <!-- Live Server Connection Status Indicator -->
+      <div id="connection-badge" class="badge-status" title="Backend Server Connectivity">
+        <span class="pulse-dot"></span>
+        <span id="connection-text">CONNECTING...</span>
+      </div>
+
+      <!-- Quick Action: Schedule Next Head Node -->
+      <button id="btn-schedule-next-top" class="btn btn-schedule" title="Schedule Highest Priority Fault (Head Node)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+        <span>Schedule Next Repair</span>
+      </button>
+
+      <!-- Aging Simulator Button -->
+      <button id="btn-aging-trigger" class="btn btn-secondary" title="Escalate Pending Tickets Exceeding Aging Threshold">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        <span>Apply Aging</span>
+      </button>
+
+      <!-- Theme Switcher -->
+      <button id="btn-theme-toggle" class="btn-icon" aria-label="Toggle Dark/Light Mode" title="Toggle Theme">
+        <svg id="theme-icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main View Container -->
+  <main class="container" role="main">
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs" role="tablist">
+      <button class="tab-btn active" data-tab="tab-dashboard" role="tab" aria-selected="true">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+        <span>Live Dashboard &amp; Queue</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-analytics" role="tab" aria-selected="false">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+        <span>Visual Analytics</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-reports" role="tab" aria-selected="false">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+        <span>Lab Reports &amp; Archive</span>
+      </button>
+    </nav>
+
+    <!-- ========================================================================
+         TAB 1: LIVE DASHBOARD & PRIORITY QUEUE
+         ======================================================================== -->
+    <div id="tab-dashboard" class="tab-content">
+
+      <!-- Summary Metrics Grid (5 Key Cards) -->
+      <section class="metrics-grid" aria-label="System Metrics">
+        <article class="metric-card card-total">
+          <div class="metric-header">
+            <span class="metric-label">Total Faults</span>
+            <div class="metric-icon-box">Σ</div>
+          </div>
+          <div id="stat-total" class="metric-value">0</div>
+          <div class="metric-footer">Active &amp; Resolved Records</div>
+        </article>
+
+        <article class="metric-card card-critical">
+          <div class="metric-header">
+            <span class="metric-label">Critical (Sev 1)</span>
+            <div class="metric-icon-box">⚡</div>
+          </div>
+          <div id="stat-critical" class="metric-value">0</div>
+          <div class="metric-footer">Highest Dispatch Priority</div>
+        </article>
+
+        <article class="metric-card card-pending">
+          <div class="metric-header">
+            <span class="metric-label">Pending Queue</span>
+            <div class="metric-icon-box">⏳</div>
+          </div>
+          <div id="stat-pending" class="metric-value">0</div>
+          <div class="metric-footer">Awaiting Technician Pickup</div>
+        </article>
+
+        <article class="metric-card card-inprogress">
+          <div class="metric-header">
+            <span class="metric-label">In-Progress</span>
+            <div class="metric-icon-box">🔧</div>
+          </div>
+          <div id="stat-inprogress" class="metric-value">0</div>
+          <div class="metric-footer">Under Active Repair</div>
+        </article>
+
+        <article class="metric-card card-repaired">
+          <div class="metric-header">
+            <span class="metric-label">Repaired / Archive</span>
+            <div class="metric-icon-box">✓</div>
+          </div>
+          <div id="stat-repaired" class="metric-value">0</div>
+          <div class="metric-footer">Completed &amp; Closed</div>
+        </article>
+      </section>
+
+      <!-- Interactive Singly Linked List Priority Queue Visualizer -->
+      <section class="section-card" aria-labelledby="queue-visualizer-title">
+        <div class="section-header">
+          <div class="section-title-wrap">
+            <h2 id="queue-visualizer-title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+              <span>Live Singly Linked List Priority Queue</span>
+            </h2>
+            <p class="section-subtitle">
+              Nodes ordered in C++ memory by: <strong>Severity (1 &gt; 2 &gt; 3 &gt; 4)</strong>, then <strong>Older Registered Time (FIFO)</strong>.
+            </p>
+          </div>
+          <div class="action-btn-group">
+            <button id="btn-refresh-queue" class="btn btn-secondary" title="Reload Queue from Server">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+              <span>Refresh</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Horizontal Node Strip -->
+        <div id="linked-list-track" class="linked-list-scroll">
+          <!-- Dynamically populated linked list nodes with pointers -->
+        </div>
+      </section>
+
+      <!-- Dashboard Grid: Register Fault Form + Faults Table -->
+      <div class="dashboard-grid">
+
+        <!-- Column 1: Register Fault Form -->
+        <section id="registration-card" class="section-card" aria-labelledby="form-heading">
+          <div class="section-header">
+            <div class="section-title-wrap">
+              <h2 id="form-heading">Register Lab Fault</h2>
+              <p class="section-subtitle">O(N) Priority Insertion into Singly Linked List</p>
+            </div>
+          </div>
+
+          <form id="fault-form" novalidate>
+            <div class="form-group">
+              <label class="form-label" for="input-computer-id">Computer Workstation ID *</label>
+              <input type="text" id="input-computer-id" class="form-control" placeholder="e.g. LAB1-PC04" required autocomplete="off">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="select-lab-number">Laboratory *</label>
+              <select id="select-lab-number" class="form-control" required>
+                <option value="">-- Select Laboratory --</option>
+                <option value="Lab 1">Lab 1 (Operating Systems Lab)</option>
+                <option value="Lab 2">Lab 2 (Computer Networks Lab)</option>
+                <option value="Lab 3">Lab 3 (AI &amp; Data Science Lab)</option>
+                <option value="Lab 4">Lab 4 (Hardware &amp; IoT Lab)</option>
+                <option value="Lab 5">Lab 5 (Cybersecurity Lab)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Severity Level *</label>
+              <div class="severity-picker" role="radiogroup">
+                <div class="sev-radio-btn">
+                  <input type="radio" name="severity" id="sev1" value="1" required checked>
+                  <label for="sev1" class="sev-radio-label">
+                    <span>1</span>
+                    <span>Critical</span>
+                  </label>
+                </div>
+                <div class="sev-radio-btn">
+                  <input type="radio" name="severity" id="sev2" value="2">
+                  <label for="sev2" class="sev-radio-label">
+                    <span>2</span>
+                    <span>High</span>
+                  </label>
+                </div>
+                <div class="sev-radio-btn">
+                  <input type="radio" name="severity" id="sev3" value="3">
+                  <label for="sev3" class="sev-radio-label">
+                    <span>3</span>
+                    <span>Medium</span>
+                  </label>
+                </div>
+                <div class="sev-radio-btn">
+                  <input type="radio" name="severity" id="sev4" value="4">
+                  <label for="sev4" class="sev-radio-label">
+                    <span>4</span>
+                    <span>Low</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="input-description">Fault Description *</label>
+              <textarea id="input-description" class="form-control" placeholder="Describe symptoms, error codes, hardware malfunction..." required></textarea>
+            </div>
+
+            <button type="submit" id="btn-submit-fault" class="btn btn-primary" style="width: 100%;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              <span>Priority Insert Fault</span>
+            </button>
+          </form>
+        </section>
+
+        <!-- Column 2: Search, Filter & Active Faults Table -->
+        <section class="section-card" aria-labelledby="table-heading">
+          <div class="section-header">
+            <div class="section-title-wrap">
+              <h2 id="table-heading">Active Queue Records</h2>
+              <p class="section-subtitle">Real-time traversal, status update, severity modification, and repair archiving</p>
+            </div>
+          </div>
+
+          <!-- Filter & Search Controls -->
+          <div class="filter-bar">
+            <div class="filter-inputs">
+              <div class="search-input-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" id="filter-search" class="form-control" placeholder="Search Computer ID or description...">
+              </div>
+
+              <select id="filter-lab" class="form-control" style="width: auto;">
+                <option value="">All Labs</option>
+                <option value="Lab 1">Lab 1</option>
+                <option value="Lab 2">Lab 2</option>
+                <option value="Lab 3">Lab 3</option>
+                <option value="Lab 4">Lab 4</option>
+                <option value="Lab 5">Lab 5</option>
+              </select>
+
+              <select id="filter-severity" class="form-control" style="width: auto;">
+                <option value="">All Severities</option>
+                <option value="1">1 - Critical</option>
+                <option value="2">2 - High</option>
+                <option value="3">3 - Medium</option>
+                <option value="4">4 - Low</option>
+              </select>
+
+              <select id="filter-status" class="form-control" style="width: auto;">
+                <option value="">All Statuses</option>
+                <option value="Pending">Pending</option>
+                <option value="In-Progress">In-Progress</option>
+                <option value="Repaired">Repaired</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Responsive Data Table -->
+          <div class="table-responsive">
+            <table class="data-table" id="faults-table">
+              <thead>
+                <tr>
+                  <th scope="col">ID</th>
+                  <th scope="col">Workstation</th>
+                  <th scope="col">Lab</th>
+                  <th scope="col">Description</th>
+                  <th scope="col">Severity</th>
+                  <th scope="col">Waiting Time</th>
+                  <th scope="col">Status</th>
+                  <th scope="col" style="text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="faults-table-body">
+                <!-- Dynamically populated rows -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+    <!-- ========================================================================
+         TAB 2: VISUAL ANALYTICS (SVG & CANVAS CHARTS)
+         ======================================================================== -->
+    <div id="tab-analytics" class="tab-content" style="display: none;">
+      <div class="charts-grid">
+
+        <!-- Chart 1: Plain SVG Bar Chart (Faults per Laboratory) -->
+        <article class="chart-container" aria-labelledby="chart-lab-title">
+          <div class="chart-header">
+            <h3 id="chart-lab-title" class="chart-title">Fault Distribution per Laboratory</h3>
+            <span class="badge-status">Pure SVG</span>
+          </div>
+          <div id="svg-bar-chart-container" class="chart-canvas-wrap">
+            <!-- Programmatically rendered SVG bars -->
+          </div>
+        </article>
+
+        <!-- Chart 2: Plain HTML5 Canvas Donut Chart (Severity Split) -->
+        <article class="chart-container" aria-labelledby="chart-sev-title">
+          <div class="chart-header">
+            <h3 id="chart-sev-title" class="chart-title">Severity Breakdown</h3>
+            <span class="badge-status">HTML5 Canvas</span>
+          </div>
+          <div class="chart-canvas-wrap">
+            <canvas id="canvas-donut-chart" width="280" height="240"></canvas>
+          </div>
+        </article>
+
+      </div>
+    </div>
+
+    <!-- ========================================================================
+         TAB 3: LAB REPORTS & ARCHIVED RESOLUTIONS
+         ======================================================================== -->
+    <div id="tab-reports" class="tab-content" style="display: none;">
+
+      <!-- Report Card: Pending Faults Grouped by Lab -->
+      <section class="report-card" aria-labelledby="rep-lab-title">
+        <div class="section-header">
+          <div class="section-title-wrap">
+            <h3 id="rep-lab-title" class="section-title">Pending Faults Grouped by Laboratory</h3>
+            <p class="section-subtitle">Real-time grouping executed via backend linked list traversal</p>
+          </div>
+          <button id="btn-print-report" class="btn btn-secondary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+            <span>Print Report</span>
+          </button>
+        </div>
+
+        <div id="pending-by-lab-container" class="report-grid">
+          <!-- Populated from GET /api/reports/pending -->
+        </div>
+      </section>
+
+      <!-- Report Card: Repaired Faults Archive List -->
+      <section class="report-card" aria-labelledby="rep-arch-title">
+        <div class="section-header">
+          <div class="section-title-wrap">
+            <h3 id="rep-arch-title" class="section-title">Historical Repaired Faults Archive</h3>
+            <p class="section-subtitle">Second Singly Linked List: Completed repairs moved out of active queue</p>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Workstation</th>
+                <th>Lab</th>
+                <th>Description</th>
+                <th>Original Severity</th>
+                <th>Registered Date</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="archive-table-body">
+              <!-- Populated from GET /api/archive -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- ==========================================================================
+       MODAL: UPDATE SEVERITY (DSA EXPLAINER: RE-INSERTION IN LINKED LIST)
+       ========================================================================== -->
+  <div id="modal-severity" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-sev-title">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h4 id="modal-sev-title" class="modal-title">Change Fault Severity</h4>
+        <button class="modal-close" data-close-modal="modal-severity">&times;</button>
+      </div>
+
+      <div class="dsa-explainer">
+        <strong>Data Structures Mechanic:</strong> Updating severity causes the node to be <em>detached</em> from its current position in the Singly Linked List in O(N) time, modified, and then <em>re-inserted</em> using priority order in O(N) time.
+      </div>
+
+      <form id="form-update-severity">
+        <input type="hidden" id="modal-sev-fault-id">
+        <div class="form-group">
+          <label class="form-label" for="modal-select-severity">New Severity Level</label>
+          <select id="modal-select-severity" class="form-control">
+            <option value="1">1 - Critical (Immediate Dispatch)</option>
+            <option value="2">2 - High Priority</option>
+            <option value="3">3 - Medium Priority</option>
+            <option value="4">4 - Low Priority</option>
+          </select>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary" data-close-modal="modal-severity">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save &amp; Re-sort Node</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- ==========================================================================
+       VANILLA JAVASCRIPT LOGIC & REST CLIENT
+       ========================================================================== -->
+  <script>
+    (function () {
+      'use strict';
+
+      // 1. API Configuration & State
+      const API_BASE = window.location.origin.startsWith('http') ? '' : 'http://localhost:8080';
+      
+      const DEFAULT_SAMPLE_FAULTS = [
+        { faultID: 1, computerID: "LAB1-PC04", labNumber: "Lab 1", description: "SMPS power unit burnt out, system cannot POST", severity: 1, severityName: "Critical", registeredTime: Math.floor(Date.now()/1000) - 100800, status: "Pending", waitingMinutes: 1680 },
+        { faultID: 7, computerID: "LAB1-PC02", labNumber: "Lab 1", description: "Master boot record corrupted following OS lab session", severity: 1, severityName: "Critical", registeredTime: Math.floor(Date.now()/1000) - 252000, status: "Pending", waitingMinutes: 4200 },
+        { faultID: 3, computerID: "LAB1-PC09", labNumber: "Lab 1", description: "LAN NIC port flapping, disconnects every 2 minutes", severity: 2, severityName: "High", registeredTime: Math.floor(Date.now()/1000) - 151200, status: "Pending", waitingMinutes: 2520 },
+        { faultID: 2, computerID: "LAB2-PC12", labNumber: "Lab 2", description: "Blue screen of death (MEMORY_MANAGEMENT) during compile", severity: 2, severityName: "High", registeredTime: Math.floor(Date.now()/1000) - 64800, status: "In-Progress", waitingMinutes: 1080 },
+        { faultID: 6, computerID: "LAB4-PC08", labNumber: "Lab 4", description: "System CPU fan rattling loudly, thermal throttling", severity: 2, severityName: "High", registeredTime: Math.floor(Date.now()/1000) - 43200, status: "Pending", waitingMinutes: 720 },
+        { faultID: 9, computerID: "LAB2-PC06", labNumber: "Lab 2", description: "Secondary 1TB HDD clicking noise, S.M.A.R.T failure", severity: 3, severityName: "Medium", registeredTime: Math.floor(Date.now()/1000) - 342000, status: "Pending", waitingMinutes: 5700 },
+        { faultID: 4, computerID: "LAB3-PC01", labNumber: "Lab 3", description: "Display resolution locked to 800x600, missing driver", severity: 3, severityName: "Medium", registeredTime: Math.floor(Date.now()/1000) - 18000, status: "Pending", waitingMinutes: 300 },
+        { faultID: 5, computerID: "LAB2-PC15", labNumber: "Lab 2", description: "Mechanical keyboard spacebar stuck / keys unresponsive", severity: 4, severityName: "Low", registeredTime: Math.floor(Date.now()/1000) - 288000, status: "Pending", waitingMinutes: 4800 },
+        { faultID: 8, computerID: "LAB3-PC20", labNumber: "Lab 3", description: "Optical mouse laser sensor dead", severity: 4, severityName: "Low", registeredTime: Math.floor(Date.now()/1000) - 54000, status: "Pending", waitingMinutes: 900 }
+      ];
+
+      const DEFAULT_ARCHIVE_FAULTS = [
+        { faultID: 10, computerID: "LAB4-PC03", labNumber: "Lab 4", description: "CMOS battery depleted, system date and time resets", severity: 4, severityName: "Low", registeredTime: Math.floor(Date.now()/1000) - 396000, status: "Repaired", registeredTimeString: "2026-10-20 09:15:00" }
+      ];
+
+      let state = {
+        activeFaults: [...DEFAULT_SAMPLE_FAULTS],
+        archivedFaults: [...DEFAULT_ARCHIVE_FAULTS],
+        summary: {
+          total: 10,
+          pending: 7,
+          inProgress: 1,
+          repaired: 2,
+          critical: 2,
+          high: 3,
+          medium: 2,
+          low: 3,
+          averageWaitHours: 48.5,
+          faultsPerLab: { "Lab 1": 3, "Lab 2": 3, "Lab 3": 2, "Lab 4": 2 }
+        },
+        pendingByLab: {
+          "Lab 1": [
+            { faultID: 1, computerID: "LAB1-PC04", labNumber: "Lab 1", description: "SMPS power unit burnt out", severity: 1 },
+            { faultID: 7, computerID: "LAB1-PC02", labNumber: "Lab 1", description: "MBR corrupted", severity: 1 },
+            { faultID: 3, computerID: "LAB1-PC09", labNumber: "Lab 1", description: "LAN NIC port flapping", severity: 2 }
+          ],
+          "Lab 2": [
+            { faultID: 9, computerID: "LAB2-PC06", labNumber: "Lab 2", description: "Secondary 1TB HDD clicking", severity: 3 },
+            { faultID: 5, computerID: "LAB2-PC15", labNumber: "Lab 2", description: "Mechanical keyboard spacebar stuck", severity: 4 }
+          ],
+          "Lab 3": [
+            { faultID: 4, computerID: "LAB3-PC01", labNumber: "Lab 3", description: "Display resolution locked to 800x600", severity: 3 },
+            { faultID: 8, computerID: "LAB3-PC20", labNumber: "Lab 3", description: "Optical mouse laser dead", severity: 4 }
+          ],
+          "Lab 4": [
+            { faultID: 6, computerID: "LAB4-PC08", labNumber: "Lab 4", description: "System CPU fan rattling loudly", severity: 2 }
+          ]
+        },
+        isBackendLive: false,
+        theme: localStorage.getItem('faulttrack_theme') || 'dark',
+        filter: {
+          search: '',
+          lab: '',
+          severity: '',
+          status: ''
+        }
+      };
+
+      // Apply initial theme
+      document.documentElement.setAttribute('data-theme', state.theme);
+
+      // DOM Elements
+      const els = {
+        connectionBadge: document.getElementById('connection-badge'),
+        connectionText: document.getElementById('connection-text'),
+        themeToggle: document.getElementById('btn-theme-toggle'),
+        tabBtns: document.querySelectorAll('.tab-btn'),
+        tabContents: document.querySelectorAll('.tab-content'),
+        statTotal: document.getElementById('stat-total'),
+        statCritical: document.getElementById('stat-critical'),
+        statPending: document.getElementById('stat-pending'),
+        statInProgress: document.getElementById('stat-inprogress'),
+        statRepaired: document.getElementById('stat-repaired'),
+        linkedListTrack: document.getElementById('linked-list-track'),
+        faultForm: document.getElementById('fault-form'),
+        inputCompId: document.getElementById('input-computer-id'),
+        selectLab: document.getElementById('select-lab-number'),
+        inputDesc: document.getElementById('input-description'),
+        filterSearch: document.getElementById('filter-search'),
+        filterLab: document.getElementById('filter-lab'),
+        filterSeverity: document.getElementById('filter-severity'),
+        filterStatus: document.getElementById('filter-status'),
+        tableBody: document.getElementById('faults-table-body'),
+        archiveTableBody: document.getElementById('archive-table-body'),
+        btnScheduleTop: document.getElementById('btn-schedule-next-top'),
+        btnAging: document.getElementById('btn-aging-trigger'),
+        btnRefreshQueue: document.getElementById('btn-refresh-queue'),
+        btnPrintReport: document.getElementById('btn-print-report'),
+        modalSeverity: document.getElementById('modal-severity'),
+        formUpdateSeverity: document.getElementById('form-update-severity'),
+        modalSevFaultId: document.getElementById('modal-sev-fault-id'),
+        modalSelectSeverity: document.getElementById('modal-select-severity'),
+        svgBarChart: document.getElementById('svg-bar-chart-container'),
+        canvasDonut: document.getElementById('canvas-donut-chart'),
+        pendingByLabContainer: document.getElementById('pending-by-lab-container')
+      };
+
+      // ======================================================================
+      // 2. TOAST NOTIFICATION SYSTEM
+      // ======================================================================
+      function showToast(message, type = 'info', duration = 3500) {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        
+        let icon = 'ℹ';
+        if (type === 'success') icon = '✓';
+        if (type === 'error') icon = '⚠';
+        if (type === 'warning') icon = '⚡';
+
+        toast.innerHTML = `<strong>${icon}</strong><span>${message}</span>`;
+        container.appendChild(toast);
+
+        // Animate entrance
+        requestAnimationFrame(() => toast.classList.add('show'));
+
+        setTimeout(() => {
+          toast.classList.remove('show');
+          setTimeout(() => toast.remove(), 300);
+        }, duration);
+      }
+
+      // ======================================================================
+      // 3. API FETCH WRAPPER WITH GRACEFUL FALLBACK
+      // ======================================================================
+      async function apiFetch(endpoint, options = {}) {
+        const url = `${API_BASE}${endpoint}`;
+        try {
+          const res = await fetch(url, {
+            ...options,
+            headers: {
+              'Content-Type': 'application/json',
+              ...(options.headers || {})
+            }
+          });
+
+          // Check if response is JSON
+          const contentType = res.headers.get('content-type');
+          let data = null;
+          if (contentType && contentType.includes('application/json')) {
+            data = await res.json();
+          } else {
+            data = await res.text();
+          }
+
+          if (!res.ok) {
+            const errorMsg = (data && data.error) ? data.error : `HTTP ${res.status}: ${res.statusText}`;
+            throw new Error(errorMsg);
+          }
+
+          updateConnectionStatus(true);
+          return data;
+        } catch (err) {
+          console.warn(`[API ERROR] ${endpoint}:`, err.message);
+          updateConnectionStatus(false);
+          throw err;
+        }
+      }
+
+      function updateConnectionStatus(isLive) {
+        state.isBackendLive = isLive;
+        if (isLive) {
+          els.connectionBadge.style.color = '#10b981';
+          els.connectionBadge.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+          els.connectionText.textContent = 'BACKEND LIVE (PORT 8080)';
+        } else {
+          els.connectionBadge.style.color = '#f59e0b';
+          els.connectionBadge.style.borderColor = 'rgba(245, 158, 11, 0.3)';
+          els.connectionText.textContent = 'OFFLINE / LOCAL DEMO';
+        }
+      }
+
+      // ======================================================================
+      // 4. DATA LOADING & STATE SYNCHRONIZATION
+      // ======================================================================
+      async function loadAllData() {
+        try {
+          // Fetch active faults
+          const faults = await apiFetch('/api/faults');
+          state.activeFaults = Array.isArray(faults) ? faults : [];
+
+          // Fetch summary report
+          const summary = await apiFetch('/api/reports/summary');
+          state.summary = summary;
+
+          // Fetch pending grouped by lab
+          const pending = await apiFetch('/api/reports/pending');
+          state.pendingByLab = pending;
+
+          // Fetch archive list
+          const archive = await apiFetch('/api/archive');
+          state.archivedFaults = Array.isArray(archive) ? archive : [];
+
+          renderAllViews();
+        } catch (err) {
+          console.info('[Notice] Server unreachable, using local fallback state if needed.');
+        }
+      }
+
+      // ======================================================================
+      // 5. VIEW RENDERERS
+      // ======================================================================
+
+      function renderAllViews() {
+        renderMetrics();
+        renderPriorityQueue();
+        renderTable();
+        renderCharts();
+        renderReports();
+      }
+
+      // A. Render Summary Metrics
+      function renderMetrics() {
+        const s = state.summary;
+        if (!s) return;
+        els.statTotal.textContent = s.total || (state.activeFaults.length + state.archivedFaults.length);
+        els.statCritical.textContent = s.critical || state.activeFaults.filter(f => f.severity === 1).length;
+        els.statPending.textContent = s.pending || state.activeFaults.filter(f => f.status === 'Pending').length;
+        els.statInProgress.textContent = s.inProgress || state.activeFaults.filter(f => f.status === 'In-Progress').length;
+        els.statRepaired.textContent = s.repaired || state.archivedFaults.length;
+      }
+
+      // B. Render Singly Linked List Connected Nodes
+      function renderPriorityQueue() {
+        els.linkedListTrack.innerHTML = '';
+
+        if (state.activeFaults.length === 0) {
+          els.linkedListTrack.innerHTML = `
+            <div style="padding: 1.5rem; color: var(--text-muted); font-size: 0.9rem;">
+              Queue is currently empty. Register a fault to initiate the singly linked list.
+            </div>`;
+          return;
+        }
+
+        state.activeFaults.forEach((fault, index) => {
+          const isHead = (index === 0);
+          const nodeEl = document.createElement('div');
+          nodeEl.className = `queue-node ${isHead ? 'head-node' : ''}`;
+          nodeEl.id = `node-${fault.faultID}`;
+
+          let sevClass = `sev-${fault.severity}`;
+          let statClass = fault.status === 'Pending' ? 'stat-pending' : (fault.status === 'In-Progress' ? 'stat-inprogress' : 'stat-repaired');
+
+          nodeEl.innerHTML = `
+            ${isHead ? '<div class="head-badge">HEAD NODE</div>' : ''}
+            <div class="node-header">
+              <span class="node-id">#${fault.faultID}</span>
+              <span class="badge-sev ${sevClass}">Sev ${fault.severity}</span>
+            </div>
+            <div class="node-computer">${escapeHtml(fault.computerID)}</div>
+            <div style="font-size: 0.72rem; color: var(--primary); font-weight: 600;">${escapeHtml(fault.labNumber)}</div>
+            <p class="node-desc" title="${escapeHtml(fault.description)}">${escapeHtml(fault.description)}</p>
+            <div class="node-footer">
+              <span class="badge-stat ${statClass}">${fault.status}</span>
+              <span class="node-meta">Age: ${formatAge(fault.waitingMinutes)}</span>
+            </div>
+          `;
+
+          // Click on node highlights corresponding row in the table
+          nodeEl.addEventListener('click', () => {
+            highlightTableRow(fault.faultID);
+          });
+
+          els.linkedListTrack.appendChild(nodeEl);
+
+          // Singly linked list pointer arrow (next pointer)
+          const pointerEl = document.createElement('div');
+          pointerEl.className = 'node-pointer';
+          pointerEl.innerHTML = `
+            <span>next*</span>
+            <div class="arrow-line">
+              <svg viewBox="0 0 32 18" fill="none">
+                <line x1="0" y1="9" x2="26" y2="9" stroke="currentColor" stroke-width="2"/>
+                <polyline points="20 4 27 9 20 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+          `;
+          els.linkedListTrack.appendChild(pointerEl);
+        });
+
+        // Terminating NULL pointer node
+        const nullEl = document.createElement('div');
+        nullEl.className = 'null-node';
+        nullEl.innerHTML = `nullptr<br><span style="font-size: 0.65rem; color: var(--text-dim);">(TAIL-&gt;next)</span>`;
+        els.linkedListTrack.appendChild(nullEl);
+      }
+
+      // C. Render Active Faults Table with Filtering
+      function renderTable() {
+        els.tableBody.innerHTML = '';
+
+        const filtered = state.activeFaults.filter(f => {
+          const matchSearch = !state.filter.search || 
+            f.computerID.toLowerCase().includes(state.filter.search.toLowerCase()) ||
+            f.description.toLowerCase().includes(state.filter.search.toLowerCase());
+          const matchLab = !state.filter.lab || f.labNumber === state.filter.lab;
+          const matchSev = !state.filter.severity || f.severity === parseInt(state.filter.severity);
+          const matchStat = !state.filter.status || f.status === state.filter.status;
+          return matchSearch && matchLab && matchSev && matchStat;
+        });
+
+        if (filtered.length === 0) {
+          els.tableBody.innerHTML = `
+            <tr>
+              <td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                No matching fault records found in active queue.
+              </td>
+            </tr>`;
+          return;
+        }
+
+        filtered.forEach(fault => {
+          const tr = document.createElement('tr');
+          tr.id = `row-fault-${fault.faultID}`;
+
+          let sevClass = `sev-${fault.severity}`;
+          let statClass = fault.status === 'Pending' ? 'stat-pending' : (fault.status === 'In-Progress' ? 'stat-inprogress' : 'stat-repaired');
+
+          tr.innerHTML = `
+            <td style="font-family: var(--font-mono); font-weight: 600;">#${fault.faultID}</td>
+            <td style="font-family: var(--font-mono); font-weight: 700;">${escapeHtml(fault.computerID)}</td>
+            <td>${escapeHtml(fault.labNumber)}</td>
+            <td style="max-width: 280px; line-height: 1.4;">${escapeHtml(fault.description)}</td>
+            <td><span class="badge-sev ${sevClass}">Sev ${fault.severity} - ${fault.severityName || getSevName(fault.severity)}</span></td>
+            <td style="font-size: 0.8rem; color: var(--text-dim);">${formatAge(fault.waitingMinutes)}</td>
+            <td><span class="badge-stat ${statClass}">${fault.status}</span></td>
+            <td style="text-align: right;">
+              <div class="action-btn-group">
+                ${fault.status === 'Pending' ? `
+                  <button class="btn-table-action" onclick="window.dispatchSchedule(${fault.faultID})" title="Mark In-Progress">
+                    Schedule
+                  </button>` : ''}
+                <button class="btn-table-action" onclick="window.openSeverityModal(${fault.faultID}, ${fault.severity})" title="Change Severity (Re-insert in Linked List)">
+                  Sev ⚙
+                </button>
+                <button class="btn-table-action" onclick="window.toggleStatus(${fault.faultID}, '${fault.status}')" title="Advance Status">
+                  Status ↻
+                </button>
+                <button class="btn-table-action" style="color: #10b981;" onclick="window.markRepairedAndArchive(${fault.faultID})" title="Mark Repaired and Move to Archive List">
+                  ✓ Repair
+                </button>
+              </div>
+            </td>
+          `;
+
+          els.tableBody.appendChild(tr);
+        });
+      }
+
+      // D. Render Pure SVG & Canvas Charts (Zero External Dependencies)
+      function renderCharts() {
+        renderSvgBarChart();
+        renderCanvasDonutChart();
+      }
+
+      // SVG Bar Chart: Faults per Laboratory
+      function renderSvgBarChart() {
+        const container = els.svgBarChart;
+        container.innerHTML = '';
+
+        const dataMap = (state.summary && state.summary.faultsPerLab) ? state.summary.faultsPerLab : {};
+        const labs = Object.keys(dataMap);
+        if (labs.length === 0) {
+          container.innerHTML = `<span style="color: var(--text-muted);">No lab statistics available.</span>`;
+          return;
+        }
+
+        const maxVal = Math.max(...Object.values(dataMap), 1);
+        const svgW = 340;
+        const svgH = 220;
+        const barW = 38;
+        const gap = (svgW - (labs.length * barW)) / (labs.length + 1);
+
+        let barsSvg = '';
+        labs.forEach((lab, i) => {
+          const val = dataMap[lab];
+          const barH = (val / maxVal) * 140;
+          const x = gap + i * (barW + gap);
+          const y = svgH - barH - 35;
+
+          barsSvg += `
+            <g class="svg-bar-group">
+              <rect x="${x}" y="${y}" width="${barW}" height="${barH}" rx="4" fill="url(#barGradient)" />
+              <text x="${x + barW/2}" y="${y - 8}" text-anchor="middle" fill="var(--text-main)" font-size="11" font-weight="700">${val}</text>
+              <text x="${x + barW/2}" y="${svgH - 12}" text-anchor="middle" fill="var(--text-muted)" font-size="10">${lab}</text>
+            </g>
+          `;
+        });
+
+        const svgContent = `
+          <svg width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}" style="overflow: visible;">
+            <defs>
+              <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#6366f1" />
+                <stop offset="100%" stop-color="#3b82f6" />
+              </linearGradient>
+            </defs>
+            <line x1="10" y1="${svgH - 30}" x2="${svgW - 10}" y2="${svgH - 30}" stroke="var(--border-strong)" stroke-width="1" />
+            ${barsSvg}
+          </svg>
+        `;
+
+        container.innerHTML = svgContent;
+      }
+
+      // HTML5 Canvas Donut Chart: Severity Split
+      function renderCanvasDonutChart() {
+        const canvas = els.canvasDonut;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const counts = [0, 0, 0, 0]; // Sev 1, 2, 3, 4
+        state.activeFaults.forEach(f => {
+          if (f.severity >= 1 && f.severity <= 4) counts[f.severity - 1]++;
+        });
+
+        const total = counts.reduce((a, b) => a + b, 0);
+        const colors = ['#f43f5e', '#f59e0b', '#0ea5e9', '#10b981'];
+        const labels = ['Critical', 'High', 'Medium', 'Low'];
+
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2 - 10;
+        const outerRadius = 75;
+        const innerRadius = 45;
+
+        if (total === 0) {
+          ctx.beginPath();
+          ctx.arc(centerX, centerY, outerRadius, 0, 2 * Math.PI);
+          ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+          ctx.lineWidth = 12;
+          ctx.stroke();
+          ctx.fillStyle = '#6b7280';
+          ctx.font = '12px Inter';
+          ctx.textAlign = 'center';
+          ctx.fillText('No Faults', centerX, centerY + 4);
+          return;
+        }
+
+        let startAngle = -Math.PI / 2;
+
+        counts.forEach((count, i) => {
+          if (count === 0) return;
+          const sliceAngle = (count / total) * 2 * Math.PI;
+
+          ctx.beginPath();
+          ctx.arc(centerX, centerY, outerRadius, startAngle, startAngle + sliceAngle);
+          ctx.arc(centerX, centerY, innerRadius, startAngle + sliceAngle, startAngle, true);
+          ctx.closePath();
+          ctx.fillStyle = colors[i];
+          ctx.fill();
+
+          startAngle += sliceAngle;
+        });
+
+        // Center Text
+        ctx.fillStyle = document.documentElement.getAttribute('data-theme') === 'light' ? '#0f172a' : '#f9fafb';
+        ctx.font = 'bold 20px Plus Jakarta Sans';
+        ctx.textAlign = 'center';
+        ctx.fillText(total, centerX, centerY + 4);
+        ctx.font = '10px Inter';
+        ctx.fillStyle = '#9ca3af';
+        ctx.fillText('TOTAL ACTIVE', centerX, centerY + 18);
+
+        // Simple Legend Below Canvas
+        let legendX = 20;
+        const legendY = canvas.height - 18;
+        const colW = (canvas.width - 40) / 4;
+
+        labels.forEach((lbl, i) => {
+          ctx.fillStyle = colors[i];
+          ctx.fillRect(legendX + i * colW, legendY, 8, 8);
+          ctx.fillStyle = '#9ca3af';
+          ctx.font = '10px Inter';
+          ctx.textAlign = 'left';
+          ctx.fillText(`${lbl[0]}:${counts[i]}`, legendX + i * colW + 12, legendY + 8);
+        });
+      }
+
+      // E. Render Lab Reports & Archive Table
+      function renderReports() {
+        // 1. Grouped by Lab
+        const container = els.pendingByLabContainer;
+        container.innerHTML = '';
+
+        const labs = Object.keys(state.pendingByLab);
+        if (labs.length === 0) {
+          container.innerHTML = `<p style="color: var(--text-muted);">No pending faults currently recorded in any laboratory.</p>`;
+        } else {
+          labs.forEach(lab => {
+            const list = state.pendingByLab[lab];
+            const box = document.createElement('div');
+            box.className = 'lab-report-box';
+
+            let itemsHtml = '';
+            list.forEach(item => {
+              itemsHtml += `
+                <div style="padding: 0.45rem 0; border-bottom: 1px dashed var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <span style="font-family: var(--font-mono); font-weight: 700; font-size: 0.8rem;">${escapeHtml(item.computerID)}</span>
+                    <p style="font-size: 0.72rem; color: var(--text-dim); margin-top: 2px;">${escapeHtml(item.description)}</p>
+                  </div>
+                  <span class="badge-sev sev-${item.severity}">Sev ${item.severity}</span>
+                </div>
+              `;
+            });
+
+            box.innerHTML = `
+              <div class="lab-report-header">
+                <span class="lab-name-tag">${escapeHtml(lab)}</span>
+                <span class="badge-status">${list.length} Pending</span>
+              </div>
+              <div>${itemsHtml}</div>
+            `;
+            container.appendChild(box);
+          });
+        }
+
+        // 2. Archived Table Body
+        els.archiveTableBody.innerHTML = '';
+        if (state.archivedFaults.length === 0) {
+          els.archiveTableBody.innerHTML = `
+            <tr>
+              <td colspan="7" style="text-align: center; padding: 1.5rem; color: var(--text-muted);">
+                No historical repaired faults archived yet.
+              </td>
+            </tr>`;
+        } else {
+          state.archivedFaults.forEach(item => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td style="font-family: var(--font-mono);">#${item.faultID}</td>
+              <td style="font-family: var(--font-mono); font-weight: 700;">${escapeHtml(item.computerID)}</td>
+              <td>${escapeHtml(item.labNumber)}</td>
+              <td>${escapeHtml(item.description)}</td>
+              <td><span class="badge-sev sev-${item.severity}">Sev ${item.severity}</span></td>
+              <td style="font-size: 0.75rem; color: var(--text-dim);">${item.registeredTimeString || new Date(item.registeredTime * 1000).toLocaleString()}</td>
+              <td><span class="badge-stat stat-repaired">Repaired</span></td>
+            `;
+            els.archiveTableBody.appendChild(tr);
+          });
+        }
+      }
+
+      // ======================================================================
+      // 6. EVENT HANDLERS & ACTIONS
+      // ======================================================================
+
+      // Register New Fault (Form Submission)
+      els.faultForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const computerID = els.inputCompId.value.trim().toUpperCase();
+        const labNumber = els.selectLab.value;
+        const description = els.inputDesc.value.trim();
+        const severityRadio = document.querySelector('input[name="severity"]:checked');
+        const severity = severityRadio ? parseInt(severityRadio.value) : 1;
+
+        if (!computerID || !labNumber || !description) {
+          showToast('Please fill out all required fields.', 'error');
+          return;
+        }
+
+        // Client-side Duplicate Check preview
+        const duplicate = state.activeFaults.find(f => 
+          f.computerID.toUpperCase() === computerID && f.status !== 'Repaired'
+        );
+        if (duplicate) {
+          showToast(`Active ticket #${duplicate.faultID} already exists for ${computerID}!`, 'warning');
+          return;
+        }
+
+        try {
+          const res = await apiFetch('/api/faults', {
+            method: 'POST',
+            body: JSON.stringify({ computerID, labNumber, description, severity })
+          });
+
+          showToast(`Fault #${res.faultID} registered & priority inserted at O(N)!`, 'success');
+          els.faultForm.reset();
+          // Reset severity radio to 1
+          document.getElementById('sev1').checked = true;
+
+          await loadAllData();
+
+          // Scroll visualizer to show the new node
+          const newNode = document.getElementById(`node-${res.faultID}`);
+          if (newNode) {
+            newNode.scrollIntoView({ behavior: 'smooth', inline: 'center' });
+            newNode.classList.add('head-node');
+            setTimeout(() => { if (newNode) newNode.classList.remove('head-node'); }, 2000);
+          }
+        } catch (err) {
+          showToast(err.message, 'error');
+        }
+      });
+
+      // Schedule Next Repair (Head Node)
+      async function scheduleNextRepair() {
+        try {
+          const res = await apiFetch('/api/schedule/next', { method: 'POST' });
+          showToast(`Scheduled Workstation ${res.computerID} (Fault #${res.faultID}) for repair!`, 'success');
+          await loadAllData();
+
+          // Visual highlight
+          const headNode = els.linkedListTrack.querySelector('.queue-node');
+          if (headNode) {
+            headNode.style.boxShadow = '0 0 30px #10b981';
+            setTimeout(() => { if (headNode) headNode.style.boxShadow = ''; }, 1500);
+          }
+        } catch (err) {
+          showToast(err.message, 'error');
+        }
+      }
+
+      els.btnScheduleTop.addEventListener('click', scheduleNextRepair);
+
+      // Trigger Aging Escalation
+      els.btnAging.addEventListener('click', async () => {
+        try {
+          // For demo convenience, aging threshold of 3600 seconds (1 hour) or simulated days
+          const res = await apiFetch('/api/faults/aging', {
+            method: 'POST',
+            body: JSON.stringify({ seconds: 3600 }) // Escalate tickets older than 1 hour for quick evaluation
+          });
+
+          if (res.escalatedCount > 0) {
+            showToast(res.message, 'warning');
+          } else {
+            showToast('Aging check complete: No tickets met the aging threshold.', 'info');
+          }
+          await loadAllData();
+        } catch (err) {
+          showToast(err.message, 'error');
+        }
+      });
+
+      // Refresh Queue Button
+      els.btnRefreshQueue.addEventListener('click', async () => {
+        await loadAllData();
+        showToast('Priority Queue refreshed from C++ server.', 'info');
+      });
+
+      // Filter Inputs
+      function handleFilterChange() {
+        state.filter.search = els.filterSearch.value.trim();
+        state.filter.lab = els.filterLab.value;
+        state.filter.severity = els.filterSeverity.value;
+        state.filter.status = els.filterStatus.value;
+        renderTable();
+      }
+
+      els.filterSearch.addEventListener('input', handleFilterChange);
+      els.filterLab.addEventListener('change', handleFilterChange);
+      els.filterSeverity.addEventListener('change', handleFilterChange);
+      els.filterStatus.addEventListener('change', handleFilterChange);
+
+      // Tabs Navigation
+      els.tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const tabId = btn.getAttribute('data-tab');
+          els.tabBtns.forEach(b => b.classList.remove('active'));
+          els.tabContents.forEach(c => c.style.display = 'none');
+
+          btn.classList.add('active');
+          const target = document.getElementById(tabId);
+          if (target) target.style.display = 'block';
+
+          if (tabId === 'tab-analytics') {
+            renderCharts();
+          }
+        });
+      });
+
+      // Theme Toggle
+      els.themeToggle.addEventListener('click', () => {
+        const next = state.theme === 'dark' ? 'light' : 'dark';
+        state.theme = next;
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('faulttrack_theme', next);
+        renderCharts();
+      });
+
+      // Print Report
+      els.btnPrintReport.addEventListener('click', () => {
+        window.print();
+      });
+
+      // ======================================================================
+      // 7. GLOBAL WINDOW ACTIONS FOR DYNAMIC TABLE BUTTONS
+      // ======================================================================
+
+      // Dispatch Single Schedule
+      window.dispatchSchedule = async function (faultID) {
+        try {
+          await apiFetch(`/api/faults/${faultID}/status`, {
+            method: 'PUT',
+            body: JSON.stringify({ status: 'In-Progress' })
+          });
+          showToast(`Fault #${faultID} status changed to In-Progress.`, 'info');
+          await loadAllData();
+        } catch (err) {
+          showToast(err.message, 'error');
+        }
+      };
+
+      // Toggle Status
+      window.toggleStatus = async function (faultID, currentStatus) {
+        let nextStatus = 'Pending';
+        if (currentStatus === 'Pending') nextStatus = 'In-Progress';
+        else if (currentStatus === 'In-Progress') nextStatus = 'Repaired';
+        else nextStatus = 'Pending';
+
+        try {
+          await apiFetch(`/api/faults/${faultID}/status`, {
+            method: 'PUT',
+            body: JSON.stringify({ status: nextStatus })
+          });
+          showToast(`Fault #${faultID} status updated to ${nextStatus}.`, 'info');
+          await loadAllData();
+        } catch (err) {
+          showToast(err.message, 'error');
+        }
+      };
+
+      // Mark Repaired and Move to Archive
+      window.markRepairedAndArchive = async function (faultID) {
+        if (!confirm(`Are you sure fault #${faultID} has been successfully resolved? It will be removed from the active queue and transferred to the archive singly linked list.`)) {
+          return;
+        }
+
+        try {
+          const res = await apiFetch(`/api/faults/${faultID}/repaired`, {
+            method: 'DELETE'
+          });
+          showToast(`Fault #${faultID} moved to archive singly linked list.`, 'success');
+          await loadAllData();
+        } catch (err) {
+          showToast(err.message, 'error');
+        }
+      };
+
+      // Open Severity Adjustment Modal
+      window.openSeverityModal = function (faultID, currentSev) {
+        els.modalSevFaultId.value = faultID;
+        els.modalSelectSeverity.value = currentSev;
+        els.modalSeverity.classList.add('active');
+      };
+
+      // Close Modals
+      document.querySelectorAll('[data-close-modal]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const modalId = btn.getAttribute('data-close-modal');
+          const m = document.getElementById(modalId);
+          if (m) m.classList.remove('active');
+        });
+      });
+
+      // Submit Severity Modal
+      els.formUpdateSeverity.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const faultID = els.modalSevFaultId.value;
+        const severity = parseInt(els.modalSelectSeverity.value);
+
+        try {
+          await apiFetch(`/api/faults/${faultID}/severity`, {
+            method: 'PUT',
+            body: JSON.stringify({ severity })
+          });
+          els.modalSeverity.classList.remove('active');
+          showToast(`Fault #${faultID} severity set to ${severity} (Node repositioned in list).`, 'success');
+          await loadAllData();
+        } catch (err) {
+          showToast(err.message, 'error');
+        }
+      });
+
+      // Highlight Row Helper
+      function highlightTableRow(faultID) {
+        const row = document.getElementById(`row-fault-${faultID}`);
+        if (row) {
+          row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          row.classList.add('highlighted-row');
+          setTimeout(() => row.classList.remove('highlighted-row'), 2000);
+        }
+      }
+
+      // Formatters
+      function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function formatAge(minutes) {
+        if (!minutes || minutes <= 0) return 'Just now';
+        if (minutes < 60) return `${minutes}m ago`;
+        const hrs = Math.floor(minutes / 60);
+        const remMins = minutes % 60;
+        if (hrs < 24) return `${hrs}h ${remMins}m ago`;
+        const days = Math.floor(hrs / 24);
+        return `${days}d ${hrs % 24}h ago`;
+      }
+
+      function getSevName(sev) {
+        switch (sev) {
+          case 1: return 'Critical';
+          case 2: return 'High';
+          case 3: return 'Medium';
+          case 4: return 'Low';
+          default: return 'Unknown';
+        }
+      }
+
+      // Initial Bootstrap
+      loadAllData();
+
+      // Poll periodically to keep dashboard synced
+      setInterval(() => {
+        loadAllData();
+      }, 5000);
+
+    })();
+  </script>
+</body>
+</html>
