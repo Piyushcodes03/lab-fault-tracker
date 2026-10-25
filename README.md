@@ -33,6 +33,6 @@ Manages faults across multiple computer labs and schedules repairs by severity a
    - Windows: `g++ backend.cpp -o backend -lws2_32 -lwsock32`
    - Linux/Mac: `g++ backend.cpp -o backend -pthread`
 3. Run it: `./backend`
-4. Open `http://localhost:8080` in your browser.
+4. Open ` https://lab-fault-tracker.onrender.com` in your browser.
 
 ## Project Structure
